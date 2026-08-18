@@ -8,7 +8,6 @@ export const REQUIRED_FIELDS = [
   "entry.700438953",
   "entry.683960552",
   "entry.1789254280",
-  "entry.541657209",
   "entry.1596782367",
   "entry.544202838",
   "entry.401901514",
@@ -17,7 +16,6 @@ export const REQUIRED_FIELDS = [
   "entry.1637579228",
   "entry.1820302390",
   "entry.1223268514",
-  "entry.307628546",
   "entry.474698771",
   "entry.317041343",
 ];
@@ -52,7 +50,7 @@ function responseHeaders(origin) {
     "Access-Control-Allow-Headers": "Content-Type",
     "Cache-Control": "no-store",
     "Content-Type": "application/json; charset=utf-8",
-    Vary: "Origin",
+    "Vary": "Origin",
     "X-Content-Type-Options": "nosniff",
   };
 }
@@ -120,6 +118,29 @@ const applicationsApi = {
           422,
         );
       }
+
+      const niche = params.get("entry.675889242");
+      const nicheDetail = (params.get("niche_detail") || "").trim().slice(0, 100);
+
+      if (niche === "Outro" && !nicheDetail) {
+        return json(
+          origin,
+          { ok: false, message: "Informe qual é o seu nicho antes de enviar." },
+          422,
+        );
+      }
+
+      if (niche === "Outro") {
+        const motivation = (params.get("entry.763598235") || "").trim();
+        params.set(
+          "entry.763598235",
+          `Nicho informado: ${nicheDetail}\n\n${motivation}`,
+        );
+      }
+
+      params.delete("niche_detail");
+      params.delete("entry.541657209");
+      params.delete("entry.307628546");
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 12_000);
