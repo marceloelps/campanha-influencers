@@ -7,7 +7,6 @@ export const REQUIRED_FIELDS = [
   "entry.675889242",
   "entry.700438953",
   "entry.683960552",
-  "entry.1789254280",
   "entry.1596782367",
   "entry.544202838",
   "entry.401901514",
@@ -107,14 +106,6 @@ const applicationsApi = {
         return json(
           origin,
           { ok: false, message: "Esta seleção é destinada a perfis com mais de 5 mil seguidores." },
-          422,
-        );
-      }
-
-      if (params.get("entry.1789254280") !== "Sim") {
-        return json(
-          origin,
-          { ok: false, message: "O perfil do Instagram precisa estar público durante a seleção." },
           422,
         );
       }
