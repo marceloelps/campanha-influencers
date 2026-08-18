@@ -104,6 +104,23 @@ const applicationsApi = {
         );
       }
 
+      const followerCount = Number(params.get("entry.683960552"));
+      if (!Number.isInteger(followerCount) || followerCount <= 5000) {
+        return json(
+          origin,
+          { ok: false, message: "Esta seleção é destinada a perfis com mais de 5 mil seguidores." },
+          422,
+        );
+      }
+
+      if (params.get("entry.1789254280") !== "Sim") {
+        return json(
+          origin,
+          { ok: false, message: "O perfil do Instagram precisa estar público durante a seleção." },
+          422,
+        );
+      }
+
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 12_000);
       let googleResponse;
