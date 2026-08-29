@@ -339,7 +339,7 @@ document.addEventListener('click',function(event){
         (window.location.hostname.indexOf('campanha-influencers-')===0&&window.location.hostname.endsWith('.vercel.app'));
       var submitUrl=isVercelHost?'/api/applications':form.dataset.submitUrl;
       var controller=window.AbortController?new AbortController():null;
-      var timeout=window.setTimeout(function(){if(controller)controller.abort();},15000);
+      var timeout=window.setTimeout(function(){if(controller)controller.abort();},22000);
 
       fetch(submitUrl,{
         method:'POST',
