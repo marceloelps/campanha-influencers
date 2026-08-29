@@ -56,7 +56,7 @@ document.addEventListener('click',function(event){
   try{tiktokEventId=sessionStorage.getItem('vesteaTikTokEventId')||'';}catch(error){}
   if(!sessionConfirmed)return;
   if(window.fbq)window.fbq('track','Lead');
-  if(window.ttq&&tiktokEventId)window.ttq.track('SubmitApplication',{}, {event_id:tiktokEventId});
+  if(window.ttq&&tiktokEventId)window.ttq.track('SubmitForm',{}, {event_id:tiktokEventId});
   try{sessionStorage.removeItem('vesteaApplicationSubmitted');}catch(error){}
   try{sessionStorage.removeItem('vesteaTikTokEventId');}catch(error){}
   if(window.history&&window.history.replaceState){

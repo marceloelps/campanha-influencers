@@ -104,7 +104,7 @@ async function sendTikTokApplicationEvent(request, tracking) {
     event_source_id: pixelId,
     data: [
       {
-        event: "SubmitApplication",
+        event: "SubmitForm",
         event_time: Math.floor(Date.now() / 1_000),
         event_id: tracking.eventId,
         user,
