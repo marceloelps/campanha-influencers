@@ -7,6 +7,7 @@ const TIKTOK_TRACKING_FIELDS = [
   "tiktok_event_id",
   "tiktok_ttclid",
   "tiktok_ttp",
+  "tiktok_diagnostic",
 ];
 
 export const REQUIRED_FIELDS = [
@@ -205,6 +206,7 @@ const applicationsApi = {
         ttclid: cleanTrackingValue(params.get("tiktok_ttclid")),
         ttp: cleanTrackingValue(params.get("tiktok_ttp")),
       };
+      const tiktokDiagnostic = params.get("tiktok_diagnostic") === "1";
 
       if (niche === "Outro" && !nicheDetail) {
         return json(
@@ -251,9 +253,17 @@ const applicationsApi = {
         );
       }
 
-      await sendTikTokApplicationEvent(request, tiktokTracking);
+      const tiktokResult = await sendTikTokApplicationEvent(request, tiktokTracking);
 
-      return json(origin, { ok: true, message: "Candidatura recebida com sucesso." }, 201);
+      return json(
+        origin,
+        {
+          ok: true,
+          message: "Candidatura recebida com sucesso.",
+          ...(tiktokDiagnostic ? { tiktok: tiktokResult } : {}),
+        },
+        201,
+      );
     } catch (error) {
       const timedOut = error instanceof Error && error.name === "AbortError";
       return json(
