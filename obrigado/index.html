@@ -41,16 +41,24 @@ document.addEventListener('click',function(event){
   };
   ttq.load('DA92IPRC77U3MKV9RUSG');
   ttq.page();
+  try{
+    var ttclid=new URLSearchParams(w.location.search).get('ttclid');
+    if(ttclid&&ttclid.length<=512){
+      d.cookie='ttclid='+encodeURIComponent(ttclid)+'; Max-Age=2592000; Path=/; SameSite=Lax; Secure';
+    }
+  }catch(error){}
 }(window,document,'ttq');
 </script></head><body class="geist_dbbf8c4b-module__5qCx7q__variable"><div hidden=""><!--$--><!--/$--></div><main class="thank-you-page"><div class="thank-you-mark" aria-hidden="true">V</div><a class="thank-you-logo" aria-label="Voltar para a Vestea Creators" href="/"><img alt="Vestea" width="160" height="62" decoding="async" data-nimg="1" style="color:transparent" src="../vestea-logo.png"/></a><section class="thank-you-content"><span>Candidatura enviada</span><h1>Recebemos a sua história.</h1><p>Nossa equipe analisará seu perfil, sua audiência e a afinidade com a Vestea. Se houver alinhamento, entraremos em contato pelos dados que você informou.</p><div class="thank-you-next"><strong>Enquanto isso</strong><p>Confira se o telefone e o e-mail informados estão acessíveis para não perder nosso contato.</p></div><a class="button button-light" href="/">Voltar para o início <b aria-hidden="true">↗</b></a></section></main><!--$--><!--/$--><noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1432952198683870&amp;ev=PageView&amp;noscript=1" alt="" /></noscript><script id="confirmed-application-events">
 (function(){
-  var queryConfirmed=new URLSearchParams(window.location.search).get('candidatura')==='enviada';
   var sessionConfirmed=false;
+  var tiktokEventId='';
   try{sessionConfirmed=sessionStorage.getItem('vesteaApplicationSubmitted')==='1';}catch(error){}
-  if(!queryConfirmed&&!sessionConfirmed)return;
+  try{tiktokEventId=sessionStorage.getItem('vesteaTikTokEventId')||'';}catch(error){}
+  if(!sessionConfirmed)return;
   if(window.fbq)window.fbq('track','Lead');
-  if(window.ttq)window.ttq.track('SubmitApplication');
+  if(window.ttq&&tiktokEventId)window.ttq.track('SubmitApplication',{}, {event_id:tiktokEventId});
   try{sessionStorage.removeItem('vesteaApplicationSubmitted');}catch(error){}
+  try{sessionStorage.removeItem('vesteaTikTokEventId');}catch(error){}
   if(window.history&&window.history.replaceState){
     window.history.replaceState(null,'','/obrigado/');
   }

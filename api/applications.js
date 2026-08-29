@@ -1,5 +1,13 @@
 const GOOGLE_FORM_ACTION =
   "https://docs.google.com/forms/d/e/1FAIpQLSeEbZF4OGgvIcs7y0LYIOXX_C2pOBek3qHX-275Y5OHuJwXcg/formResponse";
+const TIKTOK_EVENTS_API_URL =
+  "https://business-api.tiktok.com/open_api/v1.3/event/track/";
+const DEFAULT_TIKTOK_PIXEL_ID = "DA92IPRC77U3MKV9RUSG";
+const TIKTOK_TRACKING_FIELDS = [
+  "tiktok_event_id",
+  "tiktok_ttclid",
+  "tiktok_ttp",
+];
 
 export const REQUIRED_FIELDS = [
   "entry.413857955",
@@ -65,6 +73,86 @@ function hasCompletePayload(params) {
   return REQUIRED_FIELDS.every((field) => params.get(field)?.trim());
 }
 
+function cleanTrackingValue(value, maxLength = 512) {
+  return String(value || "").trim().slice(0, maxLength);
+}
+
+function clientIp(request) {
+  const forwarded = request.headers.get("x-forwarded-for") || "";
+  return cleanTrackingValue(forwarded.split(",")[0], 64) ||
+    cleanTrackingValue(request.headers.get("x-real-ip"), 64);
+}
+
+async function sendTikTokApplicationEvent(request, tracking) {
+  const accessToken = process.env.TIKTOK_EVENTS_API_ACCESS_TOKEN?.trim();
+  if (!accessToken || !tracking.eventId) return { sent: false, reason: "not-configured" };
+
+  const pixelId = process.env.TIKTOK_PIXEL_ID?.trim() || DEFAULT_TIKTOK_PIXEL_ID;
+  const user = {
+    ip: clientIp(request),
+    user_agent: cleanTrackingValue(request.headers.get("user-agent"), 1_000),
+    ttclid: tracking.ttclid,
+    ttp: tracking.ttp,
+  };
+
+  Object.keys(user).forEach((key) => {
+    if (!user[key]) delete user[key];
+  });
+
+  const payload = {
+    event_source: "web",
+    event_source_id: pixelId,
+    data: [
+      {
+        event: "SubmitApplication",
+        event_time: Math.floor(Date.now() / 1_000),
+        event_id: tracking.eventId,
+        user,
+        page: {
+          url: "https://creators.usevestea.com.br/candidatura/",
+        },
+      },
+    ],
+  };
+
+  const testEventCode = process.env.TIKTOK_TEST_EVENT_CODE?.trim();
+  if (testEventCode) payload.test_event_code = testEventCode;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5_000);
+
+  try {
+    const response = await fetch(TIKTOK_EVENTS_API_URL, {
+      method: "POST",
+      headers: {
+        "Access-Token": accessToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || result.code !== 0) {
+      console.error("TikTok Events API rejeitou o evento.", {
+        status: response.status,
+        code: result.code,
+        requestId: result.request_id,
+      });
+      return { sent: false, reason: "rejected" };
+    }
+
+    return { sent: true };
+  } catch (error) {
+    console.error("TikTok Events API não confirmou o evento.", {
+      reason: error instanceof Error ? error.name : "unknown",
+    });
+    return { sent: false, reason: "network" };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 const applicationsApi = {
   async fetch(request) {
     const origin = request.headers.get("origin") || "";
@@ -112,6 +200,11 @@ const applicationsApi = {
 
       const niche = params.get("entry.675889242");
       const nicheDetail = (params.get("niche_detail") || "").trim().slice(0, 100);
+      const tiktokTracking = {
+        eventId: cleanTrackingValue(params.get("tiktok_event_id"), 128),
+        ttclid: cleanTrackingValue(params.get("tiktok_ttclid")),
+        ttp: cleanTrackingValue(params.get("tiktok_ttp")),
+      };
 
       if (niche === "Outro" && !nicheDetail) {
         return json(
@@ -132,6 +225,7 @@ const applicationsApi = {
       params.delete("niche_detail");
       params.delete("entry.541657209");
       params.delete("entry.307628546");
+      TIKTOK_TRACKING_FIELDS.forEach((field) => params.delete(field));
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 12_000);
@@ -156,6 +250,8 @@ const applicationsApi = {
           502,
         );
       }
+
+      await sendTikTokApplicationEvent(request, tiktokTracking);
 
       return json(origin, { ok: true, message: "Candidatura recebida com sucesso." }, 201);
     } catch (error) {
