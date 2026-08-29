@@ -20,13 +20,36 @@ document.addEventListener('click',function(event){
   if(eventName)window.fbq('track',eventName);
   if(customEventName)window.fbq('trackCustom',customEventName);
 },true);
-</script></head><body class="geist_dbbf8c4b-module__5qCx7q__variable"><div hidden=""><!--$--><!--/$--></div><main class="thank-you-page"><div class="thank-you-mark" aria-hidden="true">V</div><a class="thank-you-logo" aria-label="Voltar para a Vestea Creators" href="/"><img alt="Vestea" width="160" height="62" decoding="async" data-nimg="1" style="color:transparent" src="../vestea-logo.png"/></a><section class="thank-you-content"><span>Candidatura enviada</span><h1>Recebemos a sua história.</h1><p>Nossa equipe analisará seu perfil, sua audiência e a afinidade com a Vestea. Se houver alinhamento, entraremos em contato pelos dados que você informou.</p><div class="thank-you-next"><strong>Enquanto isso</strong><p>Confira se o telefone e o e-mail informados estão acessíveis para não perder nosso contato.</p></div><a class="button button-light" href="/">Voltar para o início <b aria-hidden="true">↗</b></a></section></main><!--$--><!--/$--><noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1432952198683870&amp;ev=PageView&amp;noscript=1" alt="" /></noscript><script id="meta-lead-event">
+</script><script id="tiktok-pixel">
+!function(w,d,t){
+  w.TiktokAnalyticsObject=t;
+  var ttq=w[t]=w[t]||[];
+  ttq.methods=['page','track','identify','instances','debug','on','off','once','ready','alias','group','enableCookie','disableCookie','holdConsent','revokeConsent','grantConsent'];
+  ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
+  for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
+  ttq.instance=function(t){
+    for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);
+    return e
+  };
+  ttq.load=function(e,n){
+    var r='https://analytics.tiktok.com/i18n/pixel/events.js',o=n&&n.partner;
+    ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=r;
+    ttq._t=ttq._t||{};ttq._t[e]=+new Date;
+    ttq._o=ttq._o||{};ttq._o[e]=n||{};
+    n=d.createElement('script');n.type='text/javascript';n.async=!0;n.src=r+'?sdkid='+e+'&lib='+t;
+    e=d.getElementsByTagName('script')[0];e.parentNode.insertBefore(n,e)
+  };
+  ttq.load('DA92IPRC77U3MKV9RUSG');
+  ttq.page();
+}(window,document,'ttq');
+</script></head><body class="geist_dbbf8c4b-module__5qCx7q__variable"><div hidden=""><!--$--><!--/$--></div><main class="thank-you-page"><div class="thank-you-mark" aria-hidden="true">V</div><a class="thank-you-logo" aria-label="Voltar para a Vestea Creators" href="/"><img alt="Vestea" width="160" height="62" decoding="async" data-nimg="1" style="color:transparent" src="../vestea-logo.png"/></a><section class="thank-you-content"><span>Candidatura enviada</span><h1>Recebemos a sua história.</h1><p>Nossa equipe analisará seu perfil, sua audiência e a afinidade com a Vestea. Se houver alinhamento, entraremos em contato pelos dados que você informou.</p><div class="thank-you-next"><strong>Enquanto isso</strong><p>Confira se o telefone e o e-mail informados estão acessíveis para não perder nosso contato.</p></div><a class="button button-light" href="/">Voltar para o início <b aria-hidden="true">↗</b></a></section></main><!--$--><!--/$--><noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1432952198683870&amp;ev=PageView&amp;noscript=1" alt="" /></noscript><script id="confirmed-application-events">
 (function(){
   var queryConfirmed=new URLSearchParams(window.location.search).get('candidatura')==='enviada';
   var sessionConfirmed=false;
   try{sessionConfirmed=sessionStorage.getItem('vesteaApplicationSubmitted')==='1';}catch(error){}
   if(!queryConfirmed&&!sessionConfirmed)return;
   if(window.fbq)window.fbq('track','Lead');
+  if(window.ttq)window.ttq.track('SubmitApplication');
   try{sessionStorage.removeItem('vesteaApplicationSubmitted');}catch(error){}
   if(window.history&&window.history.replaceState){
     window.history.replaceState(null,'','/obrigado/');
