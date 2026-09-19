@@ -3,6 +3,8 @@ const GOOGLE_FORM_ACTION =
 const TIKTOK_EVENTS_API_URL =
   "https://business-api.tiktok.com/open_api/v1.3/event/track/";
 const DEFAULT_TIKTOK_PIXEL_ID = "DA92IPRC77U3MKV9RUSG";
+const CAMPAIGN_CONTEXT_NOTE =
+  "Contexto automático da campanha: joias e semijoias; mínimo de 100.000 seguidores. Stories: resultado habitual de visualizações do Story individual mais visto em um dia comum (pico diário típico), autodeclarado pela pessoa candidata. Não é a soma dos Stories, um pico excepcional ou uma média mensurada e comprovada.";
 const TIKTOK_TRACKING_FIELDS = [
   "tiktok_event_id",
   "tiktok_ttclid",
@@ -17,10 +19,6 @@ export const REQUIRED_FIELDS = [
   "entry.700438953",
   "entry.683960552",
   "entry.1596782367",
-  "entry.544202838",
-  "entry.401901514",
-  "entry.11591920",
-  "entry.763598235",
   "entry.1637579228",
   "entry.1820302390",
   "entry.1223268514",
@@ -72,6 +70,17 @@ function json(origin, body, status = 200) {
 
 function hasCompletePayload(params) {
   return REQUIRED_FIELDS.every((field) => params.get(field)?.trim());
+}
+
+function wholeNumberAnswer(params, field) {
+  const answers = params.getAll(field);
+  if (answers.length !== 1) return null;
+
+  const answer = answers[0].trim();
+  if (!/^\d+$/.test(answer)) return null;
+
+  const value = Number(answer);
+  return Number.isSafeInteger(value) ? value : null;
 }
 
 function cleanTrackingValue(value, maxLength = 512) {
@@ -190,11 +199,20 @@ const applicationsApi = {
         );
       }
 
-      const followerCount = Number(params.get("entry.683960552"));
-      if (!Number.isInteger(followerCount) || followerCount <= 5000) {
+      const followerCount = wholeNumberAnswer(params, "entry.683960552");
+      if (followerCount === null || followerCount < 100_000) {
         return json(
           origin,
-          { ok: false, message: "Esta seleção é destinada a perfis com mais de 5 mil seguidores." },
+          { ok: false, message: "Esta campanha é destinada a perfis com no mínimo 100 mil seguidores. Informe a quantidade usando apenas números inteiros." },
+          422,
+        );
+      }
+
+      const storiesViews = wholeNumberAnswer(params, "entry.1596782367");
+      if (storiesViews === null) {
+        return json(
+          origin,
+          { ok: false, message: "Informe quantas visualizações seu Story mais visto costuma ter usando apenas números inteiros, sem pontos ou vírgulas. Use 0 se ainda não houver visualizações." },
           422,
         );
       }
@@ -216,17 +234,20 @@ const applicationsApi = {
         );
       }
 
-      if (niche === "Outro") {
-        const motivation = (params.get("entry.763598235") || "").trim();
-        params.set(
-          "entry.763598235",
-          `Nicho informado: ${nicheDetail}\n\n${motivation}`,
-        );
-      }
+      // The legacy Google Forms headings still describe the previous campaign.
+      // Store the metric definition as an explicit internal note, not applicant text.
+      const motivation = (params.get("entry.763598235") || "").trim();
+      const applicationContext = [
+        niche === "Outro" ? `Nicho informado: ${nicheDetail}` : "",
+        motivation,
+        CAMPAIGN_CONTEXT_NOTE,
+      ].filter(Boolean);
+      params.set("entry.763598235", applicationContext.join("\n\n"));
 
       params.delete("niche_detail");
       params.delete("entry.541657209");
       params.delete("entry.307628546");
+      params.delete("entry.544202838");
       TIKTOK_TRACKING_FIELDS.forEach((field) => params.delete(field));
 
       const controller = new AbortController();
